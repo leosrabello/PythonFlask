@@ -18,12 +18,9 @@ class Autor(db.Model):
         default=lambda: datetime.now(timezone.utc),
     )
 
-    # Frente 3 (Livro) liga o outro lado do relacionamento 1:N descomentando a
-    # linha abaixo, depois de criar app/models/livro.py com a FK autor_id:
-    #
-    # livros = db.relationship(
-    #     "Livro", back_populates="autor", cascade="all, delete-orphan", lazy="selectin"
-    # )
+    livros = db.relationship(
+        "Livro", back_populates="autor", cascade="all, delete-orphan", lazy="selectin"
+    )
 
     def __repr__(self):
         return f"<Autor {self.id} - {self.nome}>"

@@ -94,7 +94,23 @@ Erro de validação (422) — campo desconhecido também é recusado:
 
 ### Livro — `/livros` (Frente 3)
 
-A definir pela Frente 3, seguindo exatamente o mesmo padrão de rota e de resposta.
+| Método | Rota            | O que faz                                   | Sucesso | Erros            |
+|--------|-----------------|---------------------------------------------|---------|------------------|
+| GET    | `/livros`       | Lista com filtro e paginação                | 200     | 400              |
+| GET    | `/livros/<id>`  | Busca um livro                              | 200     | 404              |
+| POST   | `/livros`       | Cria (devolve header `Location`)            | 201     | 400, 422         |
+| PUT    | `/livros/<id>`  | Substitui o recurso inteiro                 | 200     | 400, 404, 422    |
+| PATCH  | `/livros/<id>`  | Atualiza só os campos enviados              | 200     | 400, 404, 422    |
+| DELETE | `/livros/<id>`  | Remove (sem corpo na resposta)              | 204     | 404              |
+
+**Campos:** `titulo` (obrigatório, 1–200 caracteres), `ano` (obrigatório, entre 1 e 9999),
+`genero` (obrigatório, 1–80 caracteres) e `autor_id` (obrigatório e deve existir).
+`id` é gerado pelo servidor.
+
+**Filtros da listagem:** `?genero=` (busca parcial, ignora maiúsculas), `?autor_id=` (exato),
+`?page=` (padrão 1) e `?per_page=` (padrão 10, máximo 100).
+
+Exemplo: `GET /livros?genero=ficcao&autor_id=1`.
 
 ## Divisão do trabalho
 
