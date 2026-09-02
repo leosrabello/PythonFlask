@@ -1,0 +1,599 @@
+{
+  "info": {
+    "name": "Biblioteca API",
+    "description": "Colecao da Frente 4 cobrindo health, CRUD de autores, CRUD de livros e respostas de erro em JSON.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    {
+      "key": "base_url",
+      "value": "http://127.0.0.1:5000"
+    },
+    {
+      "key": "autor_id",
+      "value": ""
+    },
+    {
+      "key": "livro_id",
+      "value": ""
+    }
+  ],
+  "item": [
+    {
+      "name": "Health",
+      "item": [
+        {
+          "name": "GET /health - 200",
+          "request": {
+            "method": "GET",
+            "url": "{{base_url}}/health"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('status 200', function () { pm.response.to.have.status(200); });",
+                  "pm.test('body status ok', function () { pm.expect(pm.response.json()).to.have.property('status', 'ok'); });"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Autores",
+      "item": [
+        {
+          "name": "GET /autores - 200",
+          "request": {
+            "method": "GET",
+            "url": "{{base_url}}/autores"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('status 200', function () { pm.response.to.have.status(200); });",
+                  "pm.test('lista paginada', function () { const json = pm.response.json(); pm.expect(json).to.have.keys(['items', 'page', 'per_page', 'total', 'pages']); });"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "POST /autores - 201",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"nome\": \"Machado de Assis\",\n  \"nacionalidade\": \"Brasileira\",\n  \"data_nascimento\": \"1839-06-21\"\n}"
+            },
+            "url": "{{base_url}}/autores"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('status 201', function () { pm.response.to.have.status(201); });",
+                  "pm.test('salva autor_id', function () { const json = pm.response.json(); pm.expect(json.id).to.exist; pm.collectionVariables.set('autor_id', json.id); });",
+                  "pm.test('location informado', function () { pm.expect(pm.response.headers.get('Location')).to.include('/autores/'); });"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "GET /autores/:id - 200",
+          "request": {
+            "method": "GET",
+            "url": "{{base_url}}/autores/{{autor_id}}"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('status 200', function () { pm.response.to.have.status(200); });",
+                  "pm.test('autor retornado', function () { pm.expect(pm.response.json()).to.have.property('id', Number(pm.collectionVariables.get('autor_id'))); });"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "PUT /autores/:id - 200",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"nome\": \"Machado de Assis Atualizado\",\n  \"nacionalidade\": \"Brasileira\",\n  \"data_nascimento\": \"1839-06-21\"\n}"
+            },
+            "url": "{{base_url}}/autores/{{autor_id}}"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('status 200', function () { pm.response.to.have.status(200); });",
+                  "pm.test('nome atualizado', function () { pm.expect(pm.response.json().nome).to.eql('Machado de Assis Atualizado'); });"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "PATCH /autores/:id - 200",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"nacionalidade\": \"Brasil\"\n}"
+            },
+            "url": "{{base_url}}/autores/{{autor_id}}"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('status 200', function () { pm.response.to.have.status(200); });",
+                  "pm.test('campo atualizado', function () { pm.expect(pm.response.json().nacionalidade).to.eql('Brasil'); });"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "GET /autores?nome= - 200",
+          "request": {
+            "method": "GET",
+            "url": "{{base_url}}/autores?nome=machado&page=1&per_page=10"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('status 200', function () { pm.response.to.have.status(200); });"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "GET /autores?page=abc - 400",
+          "request": {
+            "method": "GET",
+            "url": "{{base_url}}/autores?page=abc"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('status 400', function () { pm.response.to.have.status(400); });",
+                  "pm.test('erro em JSON', function () { pm.expect(pm.response.json()).to.have.property('error'); });"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "POST /autores invalid JSON - 400",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "\"texto\""
+            },
+            "url": "{{base_url}}/autores"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('status 400', function () { pm.response.to.have.status(400); });",
+                  "pm.test('erro em JSON', function () { pm.expect(pm.response.json()).to.have.property('error'); });"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "POST /autores missing field - 422",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"nacionalidade\": \"Brasileira\"\n}"
+            },
+            "url": "{{base_url}}/autores"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('status 422', function () { pm.response.to.have.status(422); });",
+                  "pm.test('erro em JSON', function () { pm.expect(pm.response.json()).to.have.property('error'); });"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "GET /autores/999999 - 404",
+          "request": {
+            "method": "GET",
+            "url": "{{base_url}}/autores/999999"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('status 404', function () { pm.response.to.have.status(404); });",
+                  "pm.test('erro em JSON', function () { pm.expect(pm.response.json()).to.have.property('error'); });"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Livros",
+      "item": [
+        {
+          "name": "GET /livros - 200",
+          "request": {
+            "method": "GET",
+            "url": "{{base_url}}/livros"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('status 200', function () { pm.response.to.have.status(200); });",
+                  "pm.test('lista paginada', function () { const json = pm.response.json(); pm.expect(json).to.have.keys(['items', 'page', 'per_page', 'total', 'pages']); });"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "POST /livros - 201",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"titulo\": \"Dom Casmurro\",\n  \"ano\": 1899,\n  \"genero\": \"Romance\",\n  \"autor_id\": {{autor_id}}\n}"
+            },
+            "url": "{{base_url}}/livros"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('status 201', function () { pm.response.to.have.status(201); });",
+                  "pm.test('salva livro_id', function () { const json = pm.response.json(); pm.expect(json.id).to.exist; pm.collectionVariables.set('livro_id', json.id); });",
+                  "pm.test('location informado', function () { pm.expect(pm.response.headers.get('Location')).to.include('/livros/'); });"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "GET /livros/:id - 200",
+          "request": {
+            "method": "GET",
+            "url": "{{base_url}}/livros/{{livro_id}}"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('status 200', function () { pm.response.to.have.status(200); });",
+                  "pm.test('livro retornado', function () { pm.expect(pm.response.json()).to.have.property('id', Number(pm.collectionVariables.get('livro_id'))); });"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "PUT /livros/:id - 200",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"titulo\": \"Dom Casmurro Atualizado\",\n  \"ano\": 1900,\n  \"genero\": \"Romance\",\n  \"autor_id\": {{autor_id}}\n}"
+            },
+            "url": "{{base_url}}/livros/{{livro_id}}"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('status 200', function () { pm.response.to.have.status(200); });",
+                  "pm.test('titulo atualizado', function () { pm.expect(pm.response.json().titulo).to.eql('Dom Casmurro Atualizado'); });"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "PATCH /livros/:id - 200",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"genero\": \"Ficcao\"\n}"
+            },
+            "url": "{{base_url}}/livros/{{livro_id}}"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('status 200', function () { pm.response.to.have.status(200); });",
+                  "pm.test('campo atualizado', function () { pm.expect(pm.response.json().genero).to.eql('Ficcao'); });"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "GET /livros?genero=&autor_id= - 200",
+          "request": {
+            "method": "GET",
+            "url": "{{base_url}}/livros?genero=ficcao&autor_id={{autor_id}}&page=1&per_page=10"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('status 200', function () { pm.response.to.have.status(200); });"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "GET /livros?autor_id=abc - 400",
+          "request": {
+            "method": "GET",
+            "url": "{{base_url}}/livros?autor_id=abc"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('status 400', function () { pm.response.to.have.status(400); });",
+                  "pm.test('erro em JSON', function () { pm.expect(pm.response.json()).to.have.property('error'); });"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "POST /livros missing field - 422",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"ano\": 1899,\n  \"genero\": \"Romance\",\n  \"autor_id\": {{autor_id}}\n}"
+            },
+            "url": "{{base_url}}/livros"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('status 422', function () { pm.response.to.have.status(422); });",
+                  "pm.test('erro em JSON', function () { pm.expect(pm.response.json()).to.have.property('error'); });"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "POST /livros autor inexistente - 422",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"titulo\": \"Livro sem autor\",\n  \"ano\": 2026,\n  \"genero\": \"Teste\",\n  \"autor_id\": 999999\n}"
+            },
+            "url": "{{base_url}}/livros"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('status 422', function () { pm.response.to.have.status(422); });",
+                  "pm.test('erro em JSON', function () { pm.expect(pm.response.json()).to.have.property('error'); });"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "GET /livros/999999 - 404",
+          "request": {
+            "method": "GET",
+            "url": "{{base_url}}/livros/999999"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('status 404', function () { pm.response.to.have.status(404); });",
+                  "pm.test('erro em JSON', function () { pm.expect(pm.response.json()).to.have.property('error'); });"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "DELETE /livros/:id - 204",
+          "request": {
+            "method": "DELETE",
+            "url": "{{base_url}}/livros/{{livro_id}}"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('status 204', function () { pm.response.to.have.status(204); });",
+                  "pm.test('sem corpo', function () { pm.expect(pm.response.text()).to.eql(''); });"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "DELETE /autores/:id - 204",
+          "request": {
+            "method": "DELETE",
+            "url": "{{base_url}}/autores/{{autor_id}}"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('status 204', function () { pm.response.to.have.status(204); });",
+                  "pm.test('sem corpo', function () { pm.expect(pm.response.text()).to.eql(''); });"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Erros Globais",
+      "item": [
+        {
+          "name": "GET /rota-inexistente - 404",
+          "request": {
+            "method": "GET",
+            "url": "{{base_url}}/rota-inexistente"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('status 404', function () { pm.response.to.have.status(404); });",
+                  "pm.test('erro em JSON', function () { pm.expect(pm.response.json()).to.have.property('error'); });"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}
