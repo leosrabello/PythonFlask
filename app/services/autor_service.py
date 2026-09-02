@@ -7,6 +7,7 @@ decide qual status code usar.
 
 from sqlalchemy import select
 
+from ..errors import abortar
 from ..extensions import db
 from ..models.autor import Autor
 
@@ -71,10 +72,14 @@ def atualizar(autor, dados, substituir=False):
 
 
 def remover(autor):
-    """Apaga o autor.
+    """Apaga o autor, barrando a exclusão se ele ainda tiver livros.
 
-    Frente 3: quando Livro existir, decidir aqui o que fazer com os livros do
-    autor (apagar junto via cascade, ou barrar a exclusão se houver livros).
+    Integridade referencial: um autor com livros não pode ser apagado. Em vez de
+    deixar o banco estourar um erro genérico (500), a gente checa antes e devolve
+    um 409 (Conflict) com uma mensagem clara.
     """
+    if autor.livros:
+        abortar("Nao e possivel excluir um autor que possui livros", 409)
+
     db.session.delete(autor)
     db.session.commit()

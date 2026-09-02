@@ -18,8 +18,10 @@ class Autor(db.Model):
         default=lambda: datetime.now(timezone.utc),
     )
 
+    # Sem cascade de exclusão: apagar o autor NÃO apaga os livros junto.
+    # passive_deletes=True deixa a regra ON DELETE RESTRICT do banco valer.
     livros = db.relationship(
-        "Livro", back_populates="autor", cascade="all, delete-orphan", lazy="selectin"
+        "Livro", back_populates="autor", lazy="selectin", passive_deletes=True
     )
 
     def __repr__(self):
